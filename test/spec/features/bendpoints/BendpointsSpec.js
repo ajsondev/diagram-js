@@ -126,7 +126,7 @@ describe('features/bendpoints', function() {
     }));
 
 
-    it('should activate bendpoint move', inject(
+    it('should activate bendpoint move after intersection threshold', inject(
       function(dragging, eventBus, elementRegistry, bendpoints) {
 
         // when
@@ -136,11 +136,11 @@ describe('features/bendpoints', function() {
         });
         eventBus.fire('element.mousemove', {
           element: connection,
-          originalEvent: canvasEvent({ x: 500, y: 250 })
+          originalEvent: canvasEvent({ x: 525, y: 250 })
         });
         eventBus.fire('element.mousedown', {
           element: connection,
-          originalEvent: canvasEvent({ x: 500, y: 250 })
+          originalEvent: canvasEvent({ x: 525, y: 250 })
         });
 
         var draggingContext = dragging.context();
@@ -152,13 +152,8 @@ describe('features/bendpoints', function() {
     ));
 
 
-    it('should activate parallel move', inject(
+    it('should activate bendpoint move before intersection threshold', inject(
       function(dragging, eventBus, elementRegistry, bendpoints) {
-
-        // precondition
-        var intersectionStart = connection.waypoints[0].x,
-            intersectionEnd = connection.waypoints[1].x,
-            intersectionMid = intersectionEnd - (intersectionEnd - intersectionStart) / 2;
 
         // when
         eventBus.fire('element.hover', {
@@ -167,11 +162,106 @@ describe('features/bendpoints', function() {
         });
         eventBus.fire('element.mousemove', {
           element: connection,
-          originalEvent: canvasEvent({ x: intersectionMid, y: 250 })
+          originalEvent: canvasEvent({ x: 275, y: 250 })
         });
         eventBus.fire('element.mousedown', {
           element: connection,
-          originalEvent: canvasEvent({ x: intersectionMid, y: 250 })
+          originalEvent: canvasEvent({ x: 275, y: 250 })
+        });
+
+        var draggingContext = dragging.context();
+
+        // then
+        expect(draggingContext).to.exist;
+        expect(draggingContext.prefix).to.eql('bendpoint.move');
+      }
+    ));
+
+
+    it('should activate parallel move on segment center', inject(
+      function(dragging, eventBus, elementRegistry, bendpoints) {
+
+        // precondition
+        var segmentStart = connection.waypoints[0].x,
+            segmentEnd = connection.waypoints[1].x,
+            segmentCenter = segmentEnd - (segmentEnd - segmentStart) / 2;
+
+        // when
+        eventBus.fire('element.hover', {
+          element: connection,
+          gfx: elementRegistry.getGraphics(connection)
+        });
+        eventBus.fire('element.mousemove', {
+          element: connection,
+          originalEvent: canvasEvent({ x: segmentCenter, y: 250 })
+        });
+        eventBus.fire('element.mousedown', {
+          element: connection,
+          originalEvent: canvasEvent({ x: segmentCenter, y: 250 })
+        });
+
+        var draggingContext = dragging.context();
+
+        // then
+        expect(draggingContext).to.exist;
+        expect(draggingContext.prefix).to.eql('connectionSegment.move');
+      }
+    ));
+
+
+    it('should activate parallel move on intersection threshold start', inject(
+      function(dragging, eventBus, elementRegistry, bendpoints) {
+
+        // precondition
+        var intersectionStart = connection.waypoints[0].x,
+            intersectionEnd = connection.waypoints[1].x,
+            segmentLength = intersectionEnd - intersectionStart,
+            intersectionThresholdStart = intersectionStart + (segmentLength * 0.333) / 2;
+
+        // when
+        eventBus.fire('element.hover', {
+          element: connection,
+          gfx: elementRegistry.getGraphics(connection)
+        });
+        eventBus.fire('element.mousemove', {
+          element: connection,
+          originalEvent: canvasEvent({ x: intersectionThresholdStart, y: 250 })
+        });
+        eventBus.fire('element.mousedown', {
+          element: connection,
+          originalEvent: canvasEvent({ x: intersectionThresholdStart, y: 250 })
+        });
+
+        var draggingContext = dragging.context();
+
+        // then
+        expect(draggingContext).to.exist;
+        expect(draggingContext.prefix).to.eql('connectionSegment.move');
+      }
+    ));
+
+
+    it('should activate parallel move on intersection threshold end', inject(
+      function(dragging, eventBus, elementRegistry, bendpoints) {
+
+        // precondition
+        var intersectionStart = connection.waypoints[0].x,
+            intersectionEnd = connection.waypoints[1].x,
+            segmentLength = intersectionEnd - intersectionStart,
+            intersectionThresholdEnd = intersectionEnd - (segmentLength * 0.333) / 2;
+
+        // when
+        eventBus.fire('element.hover', {
+          element: connection,
+          gfx: elementRegistry.getGraphics(connection)
+        });
+        eventBus.fire('element.mousemove', {
+          element: connection,
+          originalEvent: canvasEvent({ x: intersectionThresholdEnd, y: 250 })
+        });
+        eventBus.fire('element.mousedown', {
+          element: connection,
+          originalEvent: canvasEvent({ x: intersectionThresholdEnd, y: 250 })
         });
 
         var draggingContext = dragging.context();
